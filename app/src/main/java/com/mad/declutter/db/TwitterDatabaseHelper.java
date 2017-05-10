@@ -1,0 +1,69 @@
+/*
+ * Copyright (C) 2017 Abdelrahman Ahmed
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.mad.declutter.db;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+import com.mad.declutter.db.TwitterUserSchema;
+import com.mad.declutter.db.TwitterStatusSchema;
+
+class TwitterDatabaseHelper extends SQLiteOpenHelper {
+
+    private static TwitterDatabaseHelper sInstance;
+
+    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "twitter_db";
+
+    public static synchronized TwitterDatabaseHelper getInstance(Context context) {
+        // Use the application context, which will ensure that you
+        // don't accidentally leak an Activity's context.
+        // See this article for more information: http://bit.ly/6LRzfx
+        if (sInstance == null) {
+            sInstance = new TwitterDatabaseHelper(context.getApplicationContext());
+        }
+        return sInstance;
+    }
+
+    /**
+     * Constructor should be private to prevent direct instantiation.
+     * make call to static method "getInstance()" instead.
+     */
+    private TwitterDatabaseHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL(TwitterUserSchema.SQL_CREATE_TABLE);
+        db.execSQL(TwitterStatusSchema.SQL_CREATE_TABLE);
+        db.execSQL(SQL_CREATE_RELATIONSHIP_TABLE);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL(TwitterUserSchema.SQL_DELETE_TABLE);
+        db.execSQL(TwitterStatusSchema.SQL_DELETE_TABLE);
+        db.execSQL(SQL_DELETE_RELATIONSHIP_TABLE);
+        onCreate(db);
+    }
+
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        onUpgrade(db, oldVersion, newVersion);
+    }
+}

@@ -1,0 +1,9 @@
+<resources>
+    <!-- General -->
+    <string name="app_name">Declutter</string>
+
+    <!-- Menu Options -->
+    <string name="action_quit">Quit</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_settings">Settings</string>
+</resources>
