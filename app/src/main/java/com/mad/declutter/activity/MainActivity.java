@@ -131,6 +131,113 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                return true;
+
+            case R.id.action_settings:
+                return true;
+
+            case R.id.action_logout:
+                twitterLogout();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Check user already logged in your application using twitter Login flag is
+     * fetched from Shared Preferences
+     *
+     * @return boolean Whether the user is currently logged into Twitter
+     */
+    private boolean isTwitterAuthenticated() {
+        return mSharedPreferences.getBoolean(PREF_AUTHENTICATED, false);
+    }
+
+    /**
+     *
+     */
+    private void twitterLogout() {
+        // Clear the shared preferences
+        Editor e = mSharedPreferences.edit();
+        e.remove(PREF_OAUTH_TOKEN);
+        e.remove(PREF_OAUTH_SECRET);
+        e.remove(PREF_AUTHENTICATED);
+        e.apply();
+
+        mTwitterUsername.setVisibility(View.GONE);
+        mTwitterUsername.setText("");
+
+        mTwitterLoginBtn.setVisibility(View.VISIBLE);
+    }
+
+    private class TwitterLoginHandler extends AsyncTask<Void, Void, Void> {
+        private boolean mAuthenticated;
+
+        private TwitterLoginHandler(boolean authenticated) {
+            this.mAuthenticated = authenticated;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            mProgressBar.setVisibility(View.VISIBLE);
+            mTwitterLoginBtn.setVisibility(View.GONE);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (mAuthenticated) return null;
+
+            ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+            configBuilder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
+            configBuilder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
+
+            Configuration configuration = configBuilder.build();
+            TwitterFactory factory = new TwitterFactory(configuration);
+            sTwitter = factory.getInstance();
+
+            try {
+                sRequestToken = sTwitter.getOAuthRequestToken(TWITTER_CALLBACK_URL);
+                MainActivity.this.startActivity(new Intent(Intent.ACTION_VIEW,
+                        Uri.parse(sRequestToken.getAuthenticationURL())));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) {
+            if (mAuthenticated) {
+                Toast.makeText(getApplicationContext(), "You've already authenticated with Twitter!",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
     private class TwitterCallbackHandler extends AsyncTask<Uri, Void, AccessToken> {
         @Override
         protected void onPreExecute() {
@@ -182,112 +289,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Display the user's screen name
             mTwitterUsername.setText(getString(R.string.welcome_user, screen_name));
         }
-    }
-
-    private class TwitterLoginHandler extends AsyncTask<Void, Void, Void> {
-        private boolean mAuthenticated;
-
-        private TwitterLoginHandler(boolean authenticated) {
-            this.mAuthenticated = authenticated;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            mProgressBar.setVisibility(View.VISIBLE);
-            mTwitterLoginBtn.setVisibility(View.GONE);
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            if (mAuthenticated) return null;
-
-            ConfigurationBuilder configBuilder = new ConfigurationBuilder();
-            configBuilder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
-            configBuilder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
-
-            Configuration configuration = configBuilder.build();
-            TwitterFactory factory = new TwitterFactory(configuration);
-            sTwitter = factory.getInstance();
-
-            try {
-                sRequestToken = sTwitter.getOAuthRequestToken(TWITTER_CALLBACK_URL);
-                MainActivity.this.startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse(sRequestToken.getAuthenticationURL())));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void param) {
-            if (mAuthenticated) {
-                Toast.makeText(getApplicationContext(), "You've already authenticated with Twitter!",
-                        Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    /**
-     *
-     */
-    private void twitterLogout() {
-        // Clear the shared preferences
-        Editor e = mSharedPreferences.edit();
-        e.remove(PREF_OAUTH_TOKEN);
-        e.remove(PREF_OAUTH_SECRET);
-        e.remove(PREF_AUTHENTICATED);
-        e.apply();
-
-        mTwitterUsername.setVisibility(View.GONE);
-        mTwitterUsername.setText("");
-
-        mTwitterLoginBtn.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * Check user already logged in your application using twitter Login flag is
-     * fetched from Shared Preferences
-     *
-     * @return boolean Whether the user is currently logged into Twitter
-     */
-    private boolean isTwitterAuthenticated() {
-        return mSharedPreferences.getBoolean(PREF_AUTHENTICATED, false);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        switch (item.getItemId()) {
-            case R.id.action_refresh:
-                return true;
-
-            case R.id.action_settings:
-                return true;
-
-            case R.id.action_logout:
-                twitterLogout();
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
