@@ -20,9 +20,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.mad.declutter.db.TwitterUserSchema;
-import com.mad.declutter.db.TwitterStatusSchema;
-
+/**
+ *
+ * @author Abdelrahman Ahmed
+ */
 class TwitterDatabaseHelper extends SQLiteOpenHelper {
 
     private static TwitterDatabaseHelper sInstance;
@@ -30,6 +31,12 @@ class TwitterDatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "twitter_db";
 
+    /**
+     * This method returns an instance of the database helper
+     *
+     * @param context Context
+     * @return sInstance TwitterDatabaseHelper
+     */
     public static synchronized TwitterDatabaseHelper getInstance(Context context) {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
@@ -48,21 +55,42 @@ class TwitterDatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    /**
+     * The onCreate method is called when the database is created to create any tables, indexes
+     * or insert some seed data to the database.
+     *
+     * @param db SQLiteDatabase
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(TwitterUserSchema.SQL_CREATE_TABLE);
         db.execSQL(TwitterStatusSchema.SQL_CREATE_TABLE);
-        db.execSQL(SQL_CREATE_RELATIONSHIP_TABLE);
+        db.execSQL(TwitterRelationshipSchema.SQL_CREATE_TABLE);
     }
 
+    /**
+     * The onUpgrade method is used when there are changes to the schema by dropping the current
+     * tables in the database, and calls onCreate to re-insert the updated table schema.
+     *
+     * @param db SQLiteDatabase
+     * @param oldVersion int The old version of the database
+     * @param newVersion int The new version of the database
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(TwitterUserSchema.SQL_DELETE_TABLE);
         db.execSQL(TwitterStatusSchema.SQL_DELETE_TABLE);
-        db.execSQL(SQL_DELETE_RELATIONSHIP_TABLE);
+        db.execSQL(TwitterRelationshipSchema.SQL_DELETE_TABLE);
         onCreate(db);
     }
 
+    /**
+     * The onDowngrade method
+     *
+     * @param db SQLiteDatabase
+     * @param oldVersion int The old version of the database
+     * @param newVersion int The new version of the database
+     */
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
     }
