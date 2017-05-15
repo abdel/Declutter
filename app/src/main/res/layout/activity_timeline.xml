@@ -20,6 +20,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_friends" />
+    <include layout="@layout/content_timeline" />
 
 </android.support.design.widget.CoordinatorLayout>
