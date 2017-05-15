@@ -16,24 +16,20 @@
 
 package com.mad.declutter.db;
 
-final class TwitterUserSchema {
-    private TwitterUserSchema() {}
+final class TwitterRelationshipSchema {
+    private TwitterRelationshipSchema() {}
 
-    private static final String TABLE_NAME = "twitter_users";
+    private static final String TABLE_NAME = "twitter_relationships";
 
     static final String SQL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-            "id_str TEXT NOT NULL," +
-            "screen_name INT NOT NULL," +
-            "profile_image_url_https INT NOT NULL," +
-            "description INT NOT NULL," +
-            "created_at INT NOT NULL," +
-            "name INT NOT NULL," +
-            "statuses_count INT NOT NULL," +
-            "followers_count INT NOT NULL," +
-            "friends_count INT NOT NULL," +
-            "updated_at INT NOT NULL," +
-            "PRIMARY KEY (id_str)," +
-            "UNIQUE (screen_name));";
+            "id INTEGER NOT NULL" +
+            "follows NUMERIC NOT NULL," +
+            "user_id INTEGER NOT NULL," +
+            "target_user_id INTEGER NOT NULL," +
+            "updated_at NUMERIC NOT NULL," +
+            "PRIMARY KEY (id)," +
+            "FOREIGN KEY (user_id_str) REFERENCES twitter_users(id_str)," +
+            "FOREIGN KEY (target_id_str) REFERENCES twitter_users(id_str)";
 
     static final String SQL_DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
 }

@@ -17,16 +17,18 @@
 package com.mad.declutter.db;
 
 import android.content.Context;
+import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import twitter4j.User;
 
 /**
  *
  * @author Abdelrahman Ahmed
  */
-class TwitterDatabaseHelper extends SQLiteOpenHelper {
-
-    private static TwitterDatabaseHelper sInstance;
+public class DatabaseHelper extends SQLiteOpenHelper {
+    private static DatabaseHelper sInstance;
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "twitter_db";
@@ -63,9 +65,9 @@ class TwitterDatabaseHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(TwitterUserSchema.SQL_CREATE_TABLE);
-        db.execSQL(TwitterStatusSchema.SQL_CREATE_TABLE);
-        db.execSQL(TwitterRelationshipSchema.SQL_CREATE_TABLE);
+        db.execSQL(UserSchema.SQL_CREATE_TABLE);
+        db.execSQL(StatusSchema.SQL_CREATE_TABLE);
+        db.execSQL(RelationshipSchema.SQL_CREATE_TABLE);
     }
 
     /**
@@ -78,9 +80,9 @@ class TwitterDatabaseHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(TwitterUserSchema.SQL_DELETE_TABLE);
-        db.execSQL(TwitterStatusSchema.SQL_DELETE_TABLE);
-        db.execSQL(TwitterRelationshipSchema.SQL_DELETE_TABLE);
+        db.execSQL(UserSchema.SQL_DELETE_TABLE);
+        db.execSQL(StatusSchema.SQL_DELETE_TABLE);
+        db.execSQL(RelationshipSchema.SQL_DELETE_TABLE);
         onCreate(db);
     }
 
@@ -93,5 +95,14 @@ class TwitterDatabaseHelper extends SQLiteOpenHelper {
      */
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
+    }
+
+    public void insertTwitterUser(SQLiteDatabase db, User user) {
+        ContentValues values = new ContentValues();
+        values.put(UserSchema, arguments[0]);
+        values.put("Column2", arguments[1]);
+        values.put("Column3", arguments[2]);
+
+        db.insert(TABLE_NAME, null, values);
     }
 }
