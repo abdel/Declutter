@@ -16,33 +16,33 @@
 
 package com.mad.declutter.db;
 
-final class TwitterUserSchema {
-    private TwitterUserSchema() {}
+final class UserSchema {
+    private UserSchema() {}
 
-    private static final String TABLE_NAME = "twitter_users";
-    private static final String ID = "id";
-    private static final String SCREEN_NAME = "screen_name";
-    private static final String PROFILE_IMAGE = "profile_image_url_https";
-    private static final String DESCRIPTION = "description";
-    private static final String CREATED_AT = "created_at";
-    private static final String NAME = "name";
-    private static final String STATUSES_COUNT = "statuses_count";
-    private static final String FOLLOWERS_COUNT = "followers_count";
-    private static final String FRIENDS_COUNT = "friends_count";
+    static final String TABLE_NAME = "twitter_users";
+
+    static final String COLUMN_ID = "id";
+    static final String COLUMN_NAME = "name";
+    static final String COLUMN_SCREEN_NAME = "screen_name";
+    static final String COLUMN_DESCRIPTION = "description";
+    static final String COLUMN_PROFILE_IMAGE = "profile_image_url_https";
+    static final String COLUMN_STATUSES_COUNT = "statuses_count";
+    static final String COLUMN_FOLLOWERS_COUNT = "followers_count";
+    static final String COLUMN_FRIENDS_COUNT = "friends_count";
+    static final String COLUMN_CREATED_AT = "created_at";
 
     static final String SQL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-            "id INTEGER NOT NULL," +
-            "screen_name INTEGER NOT NULL," +
-            "profile_image_url_https TEXT NOT NULL," +
-            "description TEXT NOT NULL," +
-            "created_at NUMERIC NOT NULL," +
-            "name TEXT NOT NULL," +
-            "statuses_count INTEGER NOT NULL," +
-            "followers_count INTEGER NOT NULL," +
-            "friends_count INTEGER NOT NULL," +
-            "updated_at NUMERIC NOT NULL," +
-            "PRIMARY KEY (id_str)," +
-            "UNIQUE (screen_name));";
+            COLUMN_ID + " INTEGER NOT NULL," +
+            COLUMN_NAME + " TEXT NOT NULL," +
+            COLUMN_SCREEN_NAME + " TEXT NOT NULL," +
+            COLUMN_DESCRIPTION + " TEXT NOT NULL," +
+            COLUMN_PROFILE_IMAGE + " TEXT NOT NULL," +
+            COLUMN_FRIENDS_COUNT + " INTEGER NOT NULL," +
+            COLUMN_FOLLOWERS_COUNT + " INTEGER NOT NULL," +
+            COLUMN_STATUSES_COUNT + " INTEGER NOT NULL," +
+            COLUMN_CREATED_AT + " NUMERIC NOT NULL," +
+            "PRIMARY KEY (" + COLUMN_ID + ")," +
+            "UNIQUE (" + COLUMN_SCREEN_NAME + "));";
 
     static final String SQL_DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
 }

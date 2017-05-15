@@ -16,20 +16,30 @@
 
 package com.mad.declutter.db;
 
-final class TwitterRelationshipSchema {
-    private TwitterRelationshipSchema() {}
+import twitter4j.User;
 
-    private static final String TABLE_NAME = "twitter_relationships";
+final class RelationshipSchema {
+    private RelationshipSchema() {}
+
+    static final String TABLE_NAME = "twitter_relationships";
+
+    static final String COLUMN_ID = "id";
+    static final String COLUMN_FOLLOWS = "follows";
+    static final String COLUMN_USER_ID = "user_id";
+    static final String COLUMN_TARGET_USER_ID = "target_user_id";
+    static final String COLUMN_updated_at = "updated_at";
 
     static final String SQL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-            "id INTEGER NOT NULL" +
-            "follows NUMERIC NOT NULL," +
-            "user_id INTEGER NOT NULL," +
-            "target_user_id INTEGER NOT NULL," +
-            "updated_at NUMERIC NOT NULL," +
-            "PRIMARY KEY (id)," +
-            "FOREIGN KEY (user_id_str) REFERENCES twitter_users(id_str)," +
-            "FOREIGN KEY (target_id_str) REFERENCES twitter_users(id_str)";
+            COLUMN_ID + " INTEGER NOT NULL," +
+            COLUMN_FOLLOWS + " NUMERIC NOT NULL," +
+            COLUMN_USER_ID + " INTEGER NOT NULL," +
+            COLUMN_TARGET_USER_ID + " INTEGER NOT NULL," +
+            COLUMN_updated_at + " NUMERIC NOT NULL," +
+            "PRIMARY KEY (" + COLUMN_ID + ")," +
+            "FOREIGN KEY (" + COLUMN_USER_ID + ") REFERENCES " +
+                UserSchema.TABLE_NAME + "(" + UserSchema.COLUMN_ID + ")," +
+            "FOREIGN KEY (" + COLUMN_TARGET_USER_ID + ") REFERENCES " +
+                UserSchema.TABLE_NAME + "(" + UserSchema.COLUMN_ID + "))";
 
     static final String SQL_DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
 }
