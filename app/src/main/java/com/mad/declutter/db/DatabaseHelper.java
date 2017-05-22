@@ -34,7 +34,7 @@ import twitter4j.User;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static DatabaseHelper sInstance;
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "twitter_db";
 
     /**
@@ -154,11 +154,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String relUserId = relTable + "." + RelationshipSchema.COLUMN_USER_ID;
         String relTargetId = relTable + "." + RelationshipSchema.COLUMN_TARGET_USER_ID;
 
-        return db.rawQuery("SELECT " + userId + ", " + screenName +
+        return db.rawQuery("SELECT " + userId + " as _id, *" +
                 " FROM " + userTable +
                 " JOIN " + relTable + "" +
                 " ON " + userId + " = " + relTargetId +
                 " WHERE " + relUserId + " = ?" +
                 " LIMIT 100", new String[] { String.valueOf(currentUserId) });
+    }
+
+    public Cursor getStatuses(SQLiteDatabase db) {
+        String userTable = UserSchema.TABLE_NAME;
+        String statusTable = StatusSchema.TABLE_NAME;
+        String relTable = RelationshipSchema.TABLE_NAME;
+
+
+        String userId = userTable + "." + UserSchema.COLUMN_ID;
+        String statusId = statusTable + "." + StatusSchema.COLUMN_ID;
+        String statusUserId = statusTable + "." + StatusSchema.COLUMN_USER_ID;
+        String screenName = userTable + "." + UserSchema.COLUMN_SCREEN_NAME;
+        String profilePicture = userTable + "." + UserSchema.COLUMN_PROFILE_IMAGE;
+        String relUserId = relTable + "." + RelationshipSchema.COLUMN_USER_ID;
+        String relTargetId = relTable + "." + RelationshipSchema.COLUMN_TARGET_USER_ID;
+
+        return db.rawQuery("SELECT " + statusId + " as _id, text, " + screenName + ", " + profilePicture +
+                " FROM " + statusTable +
+                " JOIN " + userTable + "" +
+                " ON " + statusUserId + " = " + userId +
+                " LIMIT ?", new String[] { String.valueOf("100") });
     }
 }
