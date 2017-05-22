@@ -8,4 +8,7 @@
     <color name="colorRed">#C63938</color>
     <color name="colorGreen">#699C37</color>
     <color name="colorBlue">#08697F</color>
+
+    <color name="colorPrimaryText">#212121</color>
+    <color name="colorSecondaryText">#727272</color>
 </resources>
