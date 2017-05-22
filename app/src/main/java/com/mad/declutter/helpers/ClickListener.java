@@ -1,8 +1,8 @@
 package com.mad.declutter.helpers;
 
-/**
- * Created by Abdel on 22/5/17.
- */
+import android.view.View;
 
-public class ClickListener {
+public interface ClickListener {
+    void onClick(View view, int position);
+    void onLongClick(View view, int position);
 }
