@@ -1,54 +1,43 @@
 package com.mad.declutter.adapter;
 
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.StrictMode;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.database.Cursor;
 import android.widget.TextView;
+import android.widget.ImageView;
+import android.view.LayoutInflater;
+import android.support.v7.widget.RecyclerView;
 
-import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 import com.mad.declutter.R;
 import com.mad.declutter.db.UserSchema;
+import com.mad.declutter.db.StatusSchema;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
-public class FriendAdapter extends CursorRecyclerAdapter<FriendAdapter.ViewHolder> {
-
-    private int[] mTo;
-    private int mLayout;
-    private int[] mFrom;
-    private String[] mOriginalFrom;
+public class TimelineAdapter extends CursorRecyclerAdapter<TimelineAdapter.ViewHolder> {
 
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView screenName;
-        TextView description;
+        TextView statusText;
         ImageView profilePicture;
 
         ViewHolder (View view) {
             super(view);
 
-            description = (TextView) view.findViewById(R.id.description);
+            statusText = (TextView) view.findViewById(R.id.statusText);
             screenName = (TextView) view.findViewById(R.id.screenName);
             profilePicture = (ImageView) view.findViewById(R.id.profilePicture);
         }
     }
 
-    public FriendAdapter(Cursor cursor) {
+    public TimelineAdapter(Cursor cursor) {
         super(cursor);
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_friend, parent, false);
+                .inflate(R.layout.item_status, parent, false);
 
         return new ViewHolder(itemView);
     }
@@ -59,8 +48,8 @@ public class FriendAdapter extends CursorRecyclerAdapter<FriendAdapter.ViewHolde
                 UserSchema.COLUMN_SCREEN_NAME
         )));
 
-        holder.description.setText(cursor.getString(cursor.getColumnIndexOrThrow(
-                UserSchema.COLUMN_DESCRIPTION
+        holder.statusText.setText(cursor.getString(cursor.getColumnIndexOrThrow(
+                StatusSchema.COLUMN_TEXT
         )));
 
         UrlImageViewHelper.setUrlDrawable(
