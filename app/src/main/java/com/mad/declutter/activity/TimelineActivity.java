@@ -1,72 +1,58 @@
 package com.mad.declutter.activity;
 
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.mad.declutter.R;
-import com.mad.declutter.adapter.FriendAdapter;
+import com.mad.declutter.adapter.TimelineAdapter;
 import com.mad.declutter.db.DatabaseHelper;
 import com.mad.declutter.helpers.TwitterHelper;
 import com.mad.declutter.model.Session;
 
-import java.util.ArrayList;
-
-import twitter4j.User;
-
-public class TimelineActivity extends AppCompatActivity implements View.OnClickListener {
+public class TimelineActivity extends AppCompatActivity {
     private SQLiteDatabase mDbRead;
     private DatabaseHelper mDbHelper;
     private RecyclerView mRecyclerView;
-    private FriendAdapter mFriendAdapter;
     private TwitterHelper mTwitterHelper;
+    private TimelineAdapter mTimelineAdapter;
     private Session mSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         mSession = new Session(getApplicationContext());
         mTwitterHelper = new TwitterHelper(getApplicationContext());
+        mTwitterHelper.setAccessToken(mSession.getAccessToken());
 
         // Get database helper instance
         mDbHelper = DatabaseHelper.getInstance(getApplicationContext());
         mDbRead = mDbHelper.getReadableDatabase();
 
-        ArrayList<User> friendsList = new ArrayList<>(10);
-
-        // Create an instance of TrainAdapter with the trains ArrayList
-        // and set the RefreshTrainListener
-        mFriendAdapter = new FriendAdapter(this, friendsList);
+        Cursor statuses = mDbHelper.getStatuses(mDbRead);
+        mTimelineAdapter = new TimelineAdapter(statuses);
 
         // Get the recyclerView and set its parameters including passing trainAdapter
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView = (RecyclerView) findViewById(R.id.timelineView);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.setAdapter(mFriendAdapter);
-    }
-
-    @Override
-    public void onClick(View view)
-    {
-        switch (view.getId())
-        {
-            case R.id.twitterFriendsBtn:
-                mTwitterHelper.new FetchTwitterFriends(mSession.getUserId()).execute();
-                break;
-
-            case R.id.twitterTimelineBtn:
-                mTwitterHelper.new FetchTwitterFriends(mSession.getUserId()).execute();
-                break;
-        }
+        mRecyclerView.setAdapter(mTimelineAdapter);
+        mRecyclerView.setHasFixedSize(true);
     }
 
     @Override
@@ -84,10 +70,18 @@ public class TimelineActivity extends AppCompatActivity implements View.OnClickL
 
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                return true;
+                mTwitterHelper.new FetchHomeTimeline(mSession.getUserId()).execute();
+                break;
 
-            case R.id.action_settings:
-                return true;
+            case R.id.action_friends:
+                Intent friendsIntent = new Intent(TimelineActivity.this, FriendsActivity.class);
+                startActivity(friendsIntent);
+                break;
+
+            case R.id.action_favourites:
+                Intent favouritesIntent = new Intent(TimelineActivity.this, FavouritesActivity.class);
+                startActivity(favouritesIntent);
+                break;
 
             case R.id.action_logout:
                 destroySession();
