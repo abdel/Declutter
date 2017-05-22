@@ -25,6 +25,7 @@ final class RelationshipSchema {
 
     static final String COLUMN_ID = "id";
     static final String COLUMN_FOLLOWS = "follows";
+    static final String COLUMN_FAVOURITE = "is_favourite";
     static final String COLUMN_USER_ID = "user_id";
     static final String COLUMN_TARGET_USER_ID = "target_user_id";
     static final String COLUMN_updated_at = "updated_at";
@@ -32,6 +33,7 @@ final class RelationshipSchema {
     static final String SQL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
             COLUMN_ID + " INTEGER NOT NULL," +
             COLUMN_FOLLOWS + " NUMERIC NOT NULL," +
+            COLUMN_FAVOURITE + " NUMERIC NOT NULL," +
             COLUMN_USER_ID + " INTEGER NOT NULL," +
             COLUMN_TARGET_USER_ID + " INTEGER NOT NULL," +
             COLUMN_updated_at + " NUMERIC NOT NULL," +

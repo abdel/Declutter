@@ -16,16 +16,16 @@
 
 package com.mad.declutter.db;
 
-final class UserSchema {
+public final class UserSchema {
     private UserSchema() {}
 
     static final String TABLE_NAME = "twitter_users";
 
     static final String COLUMN_ID = "id";
     static final String COLUMN_NAME = "name";
-    static final String COLUMN_SCREEN_NAME = "screen_name";
-    static final String COLUMN_DESCRIPTION = "description";
-    static final String COLUMN_PROFILE_IMAGE = "profile_image_url_https";
+    public static final String COLUMN_SCREEN_NAME = "screen_name";
+    public static final String COLUMN_DESCRIPTION = "description";
+    public static final String COLUMN_PROFILE_IMAGE = "profile_image_url_https";
     static final String COLUMN_STATUSES_COUNT = "statuses_count";
     static final String COLUMN_FOLLOWERS_COUNT = "followers_count";
     static final String COLUMN_FRIENDS_COUNT = "friends_count";
