@@ -5,13 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.mad.declutter.activity.FriendsActivity"
-    tools:showIn="@layout/activity_main">
+    tools:showIn="@layout/activity_friends">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/friendsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="@dimen/recycler_padding" />
+        android:padding="@dimen/recycler_padding"
+        android:layout_marginTop="45dp" />
 
     <ProgressBar
         android:visibility="gone"
