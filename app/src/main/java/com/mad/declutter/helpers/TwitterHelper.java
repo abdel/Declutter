@@ -13,11 +13,13 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import twitter4j.IDs;
+import twitter4j.Paging;
 import twitter4j.ResponseList;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.User;
+import twitter4j.Status;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
@@ -74,6 +76,10 @@ public class TwitterHelper {
 
     public static boolean hasKeys() {
         return (TWITTER_CONSUMER_KEY.trim().length() == 0 || TWITTER_CONSUMER_SECRET.trim().length() == 0);
+    }
+
+    public void setAccessToken(AccessToken accessToken) {
+        sTwitter.setOAuthAccessToken(accessToken);
     }
 
     public class TwitterLoginHandler extends AsyncTask<Void, Void, Void> {
@@ -210,6 +216,50 @@ public class TwitterHelper {
                         mDbHelper.insertUser(mDbWrite, friend);
                         mDbHelper.insertRelationship(mDbWrite, friendship);
                     }
+
+                    Log.d("FETCH_TWITTER_FRIENDS", "Stored x" + String.valueOf(friends.toArray().length) + " friends and relationships.");
+                }
+            } catch (TwitterException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) { }
+    }
+
+    public class FetchHomeTimeline extends AsyncTask<Void, Void, Void> {
+        private long mUserId;
+
+        public FetchHomeTimeline(long userId) {
+            this.mUserId = userId;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                int limit = 5;
+                long sinceId = -1;
+                int statusesCount = 0;
+                int totalStatusesCount = 0;
+
+                Paging cursor = new Paging(1, 200);
+
+                for (int i = 1; i <= limit; i++) {
+                    ResponseList<twitter4j.Status> statuses = sTwitter.getHomeTimeline(cursor);
+                    statusesCount = statuses.toArray().length;
+                    totalStatusesCount += statusesCount;
+
+                    sinceId = statuses.get(statusesCount - 1).getId();
+                    cursor.setSinceId(sinceId);
+
+                    for (twitter4j.Status status : statuses) {
+                        mDbHelper.insertStatus(mDbWrite, status);
+                    }
+
+                    Log.d("FETCH_HOME_TIMELINE", "Stored x" + String.valueOf(totalStatusesCount) + " tweets.");
                 }
             } catch (TwitterException e) {
                 e.printStackTrace();
