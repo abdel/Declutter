@@ -10,5 +10,19 @@
 
     <string name="button_login">Login to Twitter</string>
 
-    <string name="welcome_user">Welcome, %s!</string>
+    <string name="welcome_user">Welcome to Declutter!\nPress the button below to authenticate\nwith Twitter and start decluttering your timeline.</string>
+    <string name="profile_picture">Twitter Profile Picture</string>
+
+    <string name="no_tweets">Looks like we didn\'t fetch your tweets yet!\nClick the refresh icon in the menu to fetch your timeline.</string>
+    <string name="no_friends">Looks like we didn\'t fetch your friends yet!\nClick the refresh icon in the menu to fetch your friends.</string>
+    <string name="no_favourites">Looks like you have no favourites yet!\nGo back to the Friends Activity to select your favourites.</string>
+
+    <string name="authenticated">You\'re already authenticated with Twitter!</string>
+
+    <string name="placeholder_username">Username</string>
+    <string name="placeholder_text">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+        Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et ma</string>
+
+    <string name="dialog_network_title">Internet Connection Error</string>
+    <string name="dialog_network_message">Please connect to a working Internet connection</string>
 </resources>

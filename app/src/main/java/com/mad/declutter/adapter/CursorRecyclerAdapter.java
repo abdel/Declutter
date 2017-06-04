@@ -27,17 +27,35 @@ package com.mad.declutter.adapter;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 
-public abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
+/**
+ * The CursorRecyclerAdapter was developed by Arnaud Frugier and provides an easy way to use
+ * RecyclerView with data from the database inside a Cursor. It slightly modified to fit the requirements
+ * of the Declutter application.
+ *
+ * @author Arnaud Frugier, Abdelrahman Ahmed
+ * @see <a href="https://quanturium.github.io/2015/04/19/using-cursors-with-the-new-recyclerview/">ref</a>
+ * @param <VH> ViewHolder
+ */
+abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
+    private boolean mDataValid;
+    private Cursor mCursor;
+    private int mRowIDColumn;
 
-    protected boolean mDataValid;
-    protected Cursor mCursor;
-    protected int mRowIDColumn;
-
-    public CursorRecyclerAdapter(Cursor c) {
+    /**
+     * The constructor for the class and initialises the cursor
+     *
+     * @param c Cursor containing the data
+     */
+    CursorRecyclerAdapter(Cursor c) {
         init(c);
     }
 
-    void init(Cursor c) {
+    /**
+     * Initialises the cursor
+     *
+     * @param c Cursor containing data
+     */
+    private void init(Cursor c) {
         boolean cursorPresent = c != null;
         mCursor = c;
         mDataValid = cursorPresent;
@@ -45,6 +63,13 @@ public abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> 
         setHasStableIds(true);
     }
 
+    /**
+     * Implementation of the original onBindViewVolder that calls the modified onBindViewHolder
+     * that contains the Cursor support
+     *
+     * @param holder ViewHolder
+     * @param position Item position
+     */
     @Override
     public final void onBindViewHolder (VH holder, int position) {
         if (!mDataValid) {
@@ -54,15 +79,33 @@ public abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> 
             throw new IllegalStateException("couldn't move cursor to position " + position);
         }
 
-        onBindViewHolder(holder, mCursor);
+        onBindViewHolder(holder, position, mCursor);
     }
 
-    public abstract void onBindViewHolder(VH holder, Cursor cursor);
+    /**
+     * The onBindViewHolder method is used to set the attributes for each item in the view, and
+     * utilises the Cursor to retrieve the data for the attributes.
+     *
+     * @param holder ViewHolder
+     * @param position Position of the item
+     * @param cursor The Cursor containing the data
+     */
+    public abstract void onBindViewHolder(VH holder, int position, Cursor cursor);
 
+    /**
+     * Gets the Cursor from the class attribute
+     *
+     * @return Cursor
+     */
     public Cursor getCursor() {
         return mCursor;
     }
 
+    /**
+     * Gets the number of items in the cursor
+     *
+     * @return Number of items in the cursor
+     */
     @Override
     public int getItemCount () {
         if (mDataValid && mCursor != null) {
@@ -72,9 +115,15 @@ public abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> 
         }
     }
 
+    /**
+     * Get the item id from the position
+     *
+     * @param position The item position
+     * @return The item id
+     */
     @Override
-    public long getItemId (int position) {
-        if(hasStableIds() && mDataValid && mCursor != null){
+    public long getItemId(int position) {
+        if(hasStableIds() && mDataValid && mCursor != null) {
             if (mCursor.moveToPosition(position)) {
                 return mCursor.getLong(mRowIDColumn);
             } else {
@@ -91,7 +140,7 @@ public abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> 
      *
      * @param cursor The new cursor to be used
      */
-    public void changeCursor(Cursor cursor) {
+    private void changeCursor(Cursor cursor) {
         Cursor old = swapCursor(cursor);
         if (old != null) {
             old.close();

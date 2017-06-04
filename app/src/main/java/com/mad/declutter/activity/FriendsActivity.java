@@ -1,6 +1,21 @@
+/*
+ * Copyright (C) 2017 Abdelrahman Ahmed
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.mad.declutter.activity;
 
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,41 +25,45 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.mad.declutter.R;
-import com.mad.declutter.adapter.FriendAdapter;
-import com.mad.declutter.adapter.SimpleCursorRecyclerAdapter;
-import com.mad.declutter.db.DatabaseHelper;
-import com.mad.declutter.db.UserSchema;
-import com.mad.declutter.helpers.TwitterHelper;
-import com.mad.declutter.helpers.ClickListener;
-import com.mad.declutter.helpers.RecyclerTouchListener;
 import com.mad.declutter.model.Session;
-
-import twitter4j.User;
+import com.mad.declutter.db.DatabaseHelper;
+import com.mad.declutter.adapter.FriendAdapter;
+import com.mad.declutter.helpers.TwitterHelper;
 
 /**
- * Mobile Application Development - Exercise 6
+ * The FriendsActivity allows the user to fetch their friends from Twitter and browse through them.
+ * The user can select the friends and they get marked as favourites. The activity uses the recycler view
+ * and Friend Adapter to display the friend data.
  *
- * @author Abdelrahman Ahmed (Abdel)
+ * @author Abdelrahman Ahmed
  */
 public class FriendsActivity extends AppCompatActivity {
     private Session mSession;
-    private SQLiteDatabase mDbRead;
-    private TwitterHelper mTwitterHelper;
-    private DatabaseHelper mDbHelper;
+    private ProgressBar mProgressBar;
     private RecyclerView mRecyclerView;
+    private TwitterHelper mTwitterHelper;
     private FriendAdapter mFriendAdapter;
+    private TextView mEmptyView;
 
+    /**
+     * onCreate is a lifecycle method that gets called when the activity is created. This method
+     * initialises all the necessary helpers, adapters and the recycler view. It also fetches the
+     * data from the database for the adapter.
+     *
+     * @param savedInstanceState The previously saved state of the activity
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Toolbar configuration
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -55,45 +74,69 @@ public class FriendsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         // Get database helper instance
-        mDbHelper = DatabaseHelper.getInstance(getApplicationContext());
-        mDbRead = mDbHelper.getReadableDatabase();
+        DatabaseHelper dbHelper = DatabaseHelper.getInstance(getApplicationContext());
+        SQLiteDatabase dbRead = dbHelper.getReadableDatabase();
+        SQLiteDatabase dbWrite = dbHelper.getWritableDatabase();
 
         mSession = new Session(getApplicationContext());
         mTwitterHelper = new TwitterHelper(getApplicationContext());
         mTwitterHelper.setAccessToken(mSession.getAccessToken());
 
-        Cursor friends = mDbHelper.getFriends(mDbRead, mSession.getUserId());
-        mFriendAdapter = new FriendAdapter(friends);
+        // Fetch friends for the logged in user
+        Cursor friends = dbHelper.getFriends(dbRead, mSession.getUserId());
+        mFriendAdapter = new FriendAdapter(this, getApplicationContext(), mSession.getUserId(), friends);
+
+        // Get progress bar
+        mProgressBar = (ProgressBar) findViewById(R.id.friendsProgress);
 
         // Get the recyclerView and set its parameters including passing friendAdapter
-        mRecyclerView = (RecyclerView) findViewById(R.id.friendsRecyclerView);
+        mRecyclerView = (RecyclerView) findViewById(R.id.friendsView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mFriendAdapter);
 
-        mRecyclerView.addOnItemTouchListener(new RecyclerTouchListener(this, mRecyclerView, new ClickListener() {
-            @Override
-            public void onClick(View view, final int position) {
-                //Values are passing to activity & to fragment as well
-                Toast.makeText(FriendsActivity.this, "Single Click on position: " + position,
-                        Toast.LENGTH_SHORT).show();
-            }
+        // Get the empty data view
+        mEmptyView = (TextView) findViewById(R.id.empty_view);
 
-            @Override
-            public void onLongClick(View view, int position) {
-                Toast.makeText(FriendsActivity.this, "Long press on position: " + position,
-                        Toast.LENGTH_LONG).show();
-            }
-        }));
+        // Display empty view if cursor is empty
+        if (friends.getCount() > 0) {
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mEmptyView.setVisibility(View.GONE);
+        } else {
+            mRecyclerView.setVisibility(View.GONE);
+            mEmptyView.setVisibility(View.VISIBLE);
+        }
     }
 
+    /**
+     * onResume is a lifecycle method that is executed when the activity is resumed. It's used to
+     * re-fetch the friends from the database when the user returns to the activity.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mFriendAdapter.refreshFriendsData();
+    }
+
+    /**
+     * Allows the user to navigate back to the Timeline activity
+     *
+     * @return boolean
+     */
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
     }
 
+    /**
+     * Creates the activity menu from the specified layout
+     *
+     * @param menu The activity menu
+     * @return boolean
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -101,6 +144,12 @@ public class FriendsActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Handles the on select event for the menu options
+     *
+     * @param item The selected menu item
+     * @return boolean
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -108,13 +157,19 @@ public class FriendsActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
 
         switch (item.getItemId()) {
+            // Execute an async task to fetch friends from Twitter
             case R.id.action_refresh:
-                mTwitterHelper.new FetchTwitterFriends(mSession.getUserId()).execute();
+                mTwitterHelper.new FetchTwitterFriends(
+                        mSession.getUserId(),
+                        mFriendAdapter,
+                        mRecyclerView,
+                        mProgressBar,
+                        mEmptyView
+                ).execute();
                 break;
         }
 
         return super.onOptionsItemSelected(item);
     }
-
 }
 

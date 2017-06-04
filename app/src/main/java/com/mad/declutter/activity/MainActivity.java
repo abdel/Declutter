@@ -1,104 +1,117 @@
+/*
+ * Copyright (C) 2017 Abdelrahman Ahmed
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.mad.declutter.activity;
 
-import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
-import android.net.Uri;
+import android.content.Intent;
 import android.widget.ProgressBar;
-import android.content.pm.ActivityInfo;
+import android.support.v7.widget.Toolbar;
+import android.support.v7.app.AppCompatActivity;
 
 import com.mad.declutter.R;
-import com.mad.declutter.helpers.AlertDialogHelper;
-import com.mad.declutter.helpers.ConnectionHelper;
-import com.mad.declutter.helpers.TwitterHelper;
 import com.mad.declutter.model.Session;
+import com.mad.declutter.helpers.AppHelper;
+import com.mad.declutter.helpers.TwitterHelper;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+/**
+ * The MainActivity is responsible for authenticating and diverting the user to the correct
+ * location. The activity prompts the user to login to Twitter, and handles the login and callback
+ * processes via async tasks. It then redirects the user to the Timeline activity if they are
+ * successfully authenticated.
+ *
+ * @author Abdelrahman Ahmed
+ */
+public class MainActivity extends AppCompatActivity {
+    private static final String LOG_KEY = "MainActivity";
 
-    // Widgets
-    Button mTwitterLoginBtn;
-    ProgressBar mProgressBar;
-
-    private TwitterHelper mTwitterHelper;
-
+    /**
+     * onCreate is a lifecycle method that gets called when the activity is created. This method
+     * initialises all the necessary helpers, and handles the login and callback process for Twitter.
+     * It also diverts the user to the Timeline activity when successfully authenticated.
+     *
+     * @param savedInstanceState The previously saved state of the activity
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        // Setup toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Initialise helpers
-        AlertDialogHelper alertHelper = new AlertDialogHelper();
-        ConnectionHelper networkHelper = new ConnectionHelper(getApplicationContext());
+        // Initialise the app helper
+        AppHelper appHelper = new AppHelper(getApplicationContext());
 
         // Check if an Internet connection is available
-        if (!networkHelper.isNetworkAvailable()) {
-            // Internet Connection is not present
-            alertHelper.showAlertDialog(MainActivity.this,
-                    "Internet Connection Error",
-                    "Please connect to working Internet connection",
+        if (!appHelper.isNetworkAvailable()) {
+            appHelper.showAlertDialog(MainActivity.this,
+                    getString(R.string.dialog_network_title),
+                    getString(R.string.dialog_network_message),
                     false
             );
-
             return;
         }
 
         // Check if the Twitter consumer key and secret are set
         if (TwitterHelper.hasKeys()) {
-            // Internet Connection is not present
-            alertHelper.showAlertDialog(MainActivity.this,
-                    "Twitter Application Keys",
-                    "Please set your Twitter Consumer Key and Twitter Consumer Secret",
-                    false
-            );
-
+            // Log the error for application keys
+            Log.e(LOG_KEY, "The consumer key and consumer secret are not set correctly");
             return;
         }
 
-        mTwitterHelper = new TwitterHelper(getApplicationContext());
+        // Initialise the Twitter Helper
+        final TwitterHelper twitterHelper = new TwitterHelper(getApplicationContext());
 
         // Get main UI elements
-        mTwitterLoginBtn = (Button) findViewById(R.id.twitterLoginBtn);
-        mProgressBar = (ProgressBar) findViewById(R.id.mainProgressBar);
+        final Button twitterLoginBtn = (Button) findViewById(R.id.twitterLoginBtn);
+        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.mainProgressBar);
 
+        // Redirect authenticated users to the TimelineActivity
         if (Session.hasAuthenticated(getApplicationContext())) {
-            viewTimeline();
+            startActivity(new Intent(MainActivity.this, TimelineActivity.class));
         }
 
+        // Handle the callback after users login
         if (TwitterHelper.sRequestToken != null) {
             Uri uri = getIntent().getData();
-            mTwitterHelper.new TwitterCallbackHandler(mProgressBar, mTwitterLoginBtn).execute(uri);
+            twitterHelper.new TwitterCallbackHandler(this, progressBar, twitterLoginBtn).execute(uri);
         }
-    }
 
-    public void viewTimeline() {
-        // Create a new Intent to TimelineActivity
-        Intent intent = new Intent(MainActivity.this, TimelineActivity.class);
-        startActivity(intent);
-    }
-
-    @Override
-    public void onClick(View view)
-    {
-        switch (view.getId())
-        {
-            case R.id.twitterLoginBtn:
-                mTwitterHelper.new TwitterLoginHandler(
-                        mProgressBar,
-                        mTwitterLoginBtn,
+        // An onClick Listener for the Twitter Login Button
+        twitterLoginBtn.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Handles the click event for the Twitter Login button
+             *
+             * @param view The view that was clicked
+             */
+            @Override
+            public void onClick(View view) {
+                // Authenticate the user with Twitter
+                twitterHelper.new TwitterLoginHandler(
+                        progressBar,
+                        twitterLoginBtn,
                         Session.hasAuthenticated(getApplicationContext())
                 ).execute();
-                break;
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
+            }
+        });
     }
 }

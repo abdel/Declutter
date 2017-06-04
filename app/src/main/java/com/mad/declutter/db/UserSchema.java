@@ -16,11 +16,20 @@
 
 package com.mad.declutter.db;
 
+/**
+ * The UserSchema class defines the schema for the Twitter Users table in the SQLite3
+ * database. It contains references to the column names and SQL queries for creating and dropping
+ * the table from the database.
+ *
+ * @author Abdelrahman Ahmed
+ */
 public final class UserSchema {
     private UserSchema() {}
 
+    // Table name
     static final String TABLE_NAME = "twitter_users";
 
+    // Table column fields
     static final String COLUMN_ID = "id";
     static final String COLUMN_NAME = "name";
     public static final String COLUMN_SCREEN_NAME = "screen_name";
@@ -31,6 +40,7 @@ public final class UserSchema {
     static final String COLUMN_FRIENDS_COUNT = "friends_count";
     static final String COLUMN_CREATED_AT = "created_at";
 
+    // The SQL query for creating the table
     static final String SQL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
             COLUMN_ID + " INTEGER NOT NULL," +
             COLUMN_NAME + " TEXT NOT NULL," +
@@ -44,5 +54,6 @@ public final class UserSchema {
             "PRIMARY KEY (" + COLUMN_ID + ")," +
             "UNIQUE (" + COLUMN_SCREEN_NAME + "));";
 
+    // The SQL query for dropping the table
     static final String SQL_DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
 }

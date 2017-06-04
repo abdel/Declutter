@@ -1,32 +1,36 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="72dp"
-    android:padding="6dip"
-    android:clickable="true">
+    android:layout_height="wrap_content"
+    android:padding="@dimen/recycler_padding"
+    android:layout_margin="@dimen/recycler_padding"
+    android:id="@+id/friendLayout"
+    android:clickable="true"
+    android:background="@drawable/selector_row">
 
     <ImageView
         android:id="@+id/profilePicture"
         android:layout_width="@dimen/avatar_width"
         android:layout_height="@dimen/avatar_height"
-        android:padding="0dp"
+        android:padding="@dimen/zero"
         android:src="@mipmap/avatar"
-        android:contentDescription="Image Description"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true" />
+        android:contentDescription="@string/profile_picture"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true" />
 
     <TextView
         android:id="@+id/description"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:ellipsize="marquee"
-        android:maxLines="1"
-        android:text="Description"
+        android:text="@string/placeholder_text"
         android:textSize="@dimen/font_size_text"
         android:textColor="@color/colorSecondaryText"
         android:layout_below="@+id/screenName"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="55dp"
-        android:layout_marginEnd="16dp" />
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="@dimen/left_margin"
+        android:layout_marginLeft="@dimen/left_margin"
+        android:layout_marginEnd="@dimen/right_margin"
+        android:layout_marginRight="@dimen/right_margin" />
 
     <TextView
         android:id="@+id/screenName"
@@ -34,13 +38,16 @@
         android:layout_height="wrap_content"
         android:layout_alignWithParentIfMissing="true"
         android:gravity="center_vertical"
-        android:text="Username"
+        android:text="@string/placeholder_username"
         android:textSize="@dimen/font_size_username"
         android:textColor="@color/colorPrimaryText"
         android:layout_alignTop="@+id/profilePicture"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="55dp"
-        android:layout_marginEnd="16dp"
-        android:paddingBottom="5dp" />
+        android:layout_marginStart="@dimen/left_margin"
+        android:layout_marginEnd="@dimen/right_margin"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="@dimen/left_margin"
+        android:layout_marginRight="@dimen/right_margin"
+        android:paddingBottom="@dimen/username_padding" />
 
 </RelativeLayout>

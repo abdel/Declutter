@@ -21,6 +21,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.mad.declutter.model.Relationship;
 
@@ -28,13 +29,17 @@ import twitter4j.Status;
 import twitter4j.User;
 
 /**
+ * DatabaseHelper handles all interactions with the database. The database tables are created and
+ * upgraded using onCreate and onUpgrade. Insert methods for users, relationships and statuses are
+ * provided in the class and can be accessed by any class in the application. Similarly, the getter
+ * methods that fetch data from the database can be access from this helper.
  *
  * @author Abdelrahman Ahmed
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static DatabaseHelper sInstance;
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "twitter_db";
 
     /**
@@ -44,7 +49,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @return sInstance DatabaseHelper
      */
     public static synchronized DatabaseHelper getInstance(Context context) {
-        // Use the application context, which will ensure that you
+        // Use the application context, whicah will ensure that you
         // don't accidentally leak an Activity's context.
         // See this article for more information: http://bit.ly/6LRzfx
         if (sInstance == null) {
@@ -101,6 +106,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
 
+    /**
+     * Inserts a new twitter user into the database
+     *
+     * @param db Instance of writable database
+     * @param user Twitter User object as modelled by the Twitter4J library
+     */
     public void insertUser(SQLiteDatabase db, User user) {
         ContentValues values = new ContentValues();
         values.put(UserSchema.COLUMN_ID, user.getId());
@@ -116,16 +127,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insertWithOnConflict(UserSchema.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
+    /**
+     * Inserts a new relationship between two users into the database
+     *
+     * @param db Instance of writable database
+     * @param relationship Twitter Relationship object
+     */
     public void insertRelationship(SQLiteDatabase db, Relationship relationship) {
         ContentValues values = new ContentValues();
         values.put(RelationshipSchema.COLUMN_USER_ID, relationship.getUserId());
         values.put(RelationshipSchema.COLUMN_TARGET_USER_ID, relationship.getTargetUserId());
         values.put(RelationshipSchema.COLUMN_FOLLOWS, relationship.isFollows());
+        values.put(RelationshipSchema.COLUMN_FAVOURITE, relationship.isFavourite());
         values.put(RelationshipSchema.COLUMN_updated_at, relationship.getUpdatedAt());
 
         db.insertWithOnConflict(RelationshipSchema.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
+    /**
+     * Inserts a new tweet into the database
+     *
+     * @param db Instance of writable database
+     * @param status Twitter Status object as modelled by the Twitter4J library
+     */
     public void insertStatus(SQLiteDatabase db, Status status) {
         ContentValues values = new ContentValues();
         values.put(StatusSchema.COLUMN_ID, status.getId());
@@ -144,42 +168,162 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insertWithOnConflict(StatusSchema.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
+    /**
+     * Fetches a limited amount of the user's friends
+     *
+     * @param db Instance of readable database
+     * @param currentUserId The current logged in user
+     * @return Cursor A list of Twitter friends
+     */
     public Cursor getFriends(SQLiteDatabase db, long currentUserId) {
+        // Get the table names
         String userTable = UserSchema.TABLE_NAME;
         String relTable = RelationshipSchema.TABLE_NAME;
 
-
+        // Use the full field names (including the table name)
         String userId = userTable + "." + UserSchema.COLUMN_ID;
         String screenName = userTable + "." + UserSchema.COLUMN_SCREEN_NAME;
         String relUserId = relTable + "." + RelationshipSchema.COLUMN_USER_ID;
         String relTargetId = relTable + "." + RelationshipSchema.COLUMN_TARGET_USER_ID;
 
-        return db.rawQuery("SELECT " + userId + " as _id, *" +
+        return db.rawQuery("SELECT DISTINCT " + userId + " as _id, *" +
                 " FROM " + userTable +
                 " JOIN " + relTable + "" +
                 " ON " + userId + " = " + relTargetId +
                 " WHERE " + relUserId + " = ?" +
+                " ORDER BY " + screenName + " ASC" +
                 " LIMIT 100", new String[] { String.valueOf(currentUserId) });
     }
 
-    public Cursor getStatuses(SQLiteDatabase db) {
+    /**
+     * Fetches a limited amount of the user's favourites
+     *
+     * @param db Instance of readable database
+     * @param currentUserId The current logged in user
+     * @return Cursor A list of Twitter friends
+     */
+    public Cursor getFavourites(SQLiteDatabase db, long currentUserId) {
+        // Get the table names
+        String userTable = UserSchema.TABLE_NAME;
+        String relTable = RelationshipSchema.TABLE_NAME;
+
+        // Use the full field names (including the table name)
+        String userId = userTable + "." + UserSchema.COLUMN_ID;
+        String screenName = userTable + "." + UserSchema.COLUMN_SCREEN_NAME;
+        String relUserId = relTable + "." + RelationshipSchema.COLUMN_USER_ID;
+        String relTargetId = relTable + "." + RelationshipSchema.COLUMN_TARGET_USER_ID;
+        String relFavourite = relTable + "." + RelationshipSchema.COLUMN_FAVOURITE;
+
+        return db.rawQuery("SELECT DISTINCT " + userId + " as _id, *" +
+                " FROM " + userTable +
+                " JOIN " + relTable + "" +
+                " ON " + userId + " = " + relTargetId +
+                " WHERE " + relUserId + " = ? AND " + relFavourite + " = ?" +
+                " ORDER BY " + screenName + " ASC" +
+                " LIMIT 100",
+                new String[] {
+                        String.valueOf(currentUserId),
+                        String.valueOf(1)
+                }
+        );
+    }
+
+    /**
+     * Fetches a limited amount of tweets for the current user without any additional criteria
+     *
+     * @param db Instance of the readable database
+     * @return Cursor A list of tweets
+     */
+    public Cursor getStatuses(SQLiteDatabase db, long currentUserId) {
+        // Set the table names
         String userTable = UserSchema.TABLE_NAME;
         String statusTable = StatusSchema.TABLE_NAME;
         String relTable = RelationshipSchema.TABLE_NAME;
 
-
+        // Set the required params with the table alias
         String userId = userTable + "." + UserSchema.COLUMN_ID;
-        String statusId = statusTable + "." + StatusSchema.COLUMN_ID;
-        String statusUserId = statusTable + "." + StatusSchema.COLUMN_USER_ID;
+        String statusId =  "s1." + StatusSchema.COLUMN_ID;
+        String statusUserId =  "s1." + StatusSchema.COLUMN_USER_ID;
+        String screenName = userTable + "." + UserSchema.COLUMN_SCREEN_NAME;
+        String profilePicture = userTable + "." + UserSchema.COLUMN_PROFILE_IMAGE;
+
+        // Only fetch the first 10 tweets from each favourited user to avoid spamming the timeline
+        return db.rawQuery("SELECT " + statusId + " as _id, text, " + screenName + ", " + profilePicture +
+                        " FROM " + statusTable + " s1" +
+                        " JOIN " + userTable + "" +
+                        " ON " + statusUserId + " = " + userId +
+                        " ORDER BY s1.created_at DESC" +
+                        " LIMIT 5000",
+                new String[] { });
+    }
+
+    /**
+     * Fetches a limited amount of filtered tweets for the current user which contains only
+     * their favourite friends.
+     *
+     * @param db Instance of the readable database
+     * @return Cursor A list of tweets
+     */
+    public Cursor getFavouriteStatuses(SQLiteDatabase db, long currentUserId) {
+        // Set the table names
+        String userTable = UserSchema.TABLE_NAME;
+        String statusTable = StatusSchema.TABLE_NAME;
+        String relTable = RelationshipSchema.TABLE_NAME;
+
+        // Set the required params with the table alias
+        String userId = userTable + "." + UserSchema.COLUMN_ID;
+        String statusId =  "s1." + StatusSchema.COLUMN_ID;
+        String statusUserId =  "s1." + StatusSchema.COLUMN_USER_ID;
         String screenName = userTable + "." + UserSchema.COLUMN_SCREEN_NAME;
         String profilePicture = userTable + "." + UserSchema.COLUMN_PROFILE_IMAGE;
         String relUserId = relTable + "." + RelationshipSchema.COLUMN_USER_ID;
         String relTargetId = relTable + "." + RelationshipSchema.COLUMN_TARGET_USER_ID;
+        String relFavourite = relTable + "." + RelationshipSchema.COLUMN_FAVOURITE;
 
+        // Only fetch the first 10 tweets from each favourited user to avoid spamming the timeline
         return db.rawQuery("SELECT " + statusId + " as _id, text, " + screenName + ", " + profilePicture +
-                " FROM " + statusTable +
+                " FROM " + statusTable + " s1" +
                 " JOIN " + userTable + "" +
                 " ON " + statusUserId + " = " + userId +
-                " LIMIT ?", new String[] { String.valueOf("100") });
+                " JOIN " + relTable + "" +
+                " ON " + statusUserId + " = " + relTargetId +
+                " WHERE " + relFavourite + " = ? AND " + relUserId + " = ?" +
+                " AND (SELECT count(*)" +
+                        " FROM " + statusTable + " s2" +
+                        " WHERE s2.id <= s1.id and s2.user_id = s1.user_id" +
+                ") <= 10" +
+                " ORDER BY s1.created_at DESC" +
+                " LIMIT 5000",
+                new String[] { String.valueOf(1), String.valueOf(currentUserId) });
+    }
+
+    /**
+     * Updates the favourite status for the specified target user in the relationships table
+     *
+     * @param db Instance of the writable database
+     * @param userId The current logged in user
+     * @param targetUserId The target user (friend)
+     * @param isFavourite The favourite status (0 or 1)
+     * @return boolean Whether or not the update was successful
+     */
+    public boolean updateFavouriteStatus(SQLiteDatabase db, long userId, long targetUserId, int isFavourite) {
+        ContentValues values = new ContentValues();
+        values.put(RelationshipSchema.COLUMN_FAVOURITE, isFavourite);
+
+        // Ensure we're only updating the status for the correct relationship
+        // by checking for the main user ID and target user ID
+        String whereClause = RelationshipSchema.COLUMN_USER_ID + " = ?" +
+                " AND " + RelationshipSchema.COLUMN_TARGET_USER_ID + " = ?";
+
+        return db.update(RelationshipSchema.TABLE_NAME, values, whereClause, new String[] {
+                String.valueOf(userId),
+                String.valueOf(targetUserId)
+        }) > 0;
+    }
+
+    public boolean deleteRelationships(SQLiteDatabase db, long userId) {
+        return db.delete(RelationshipSchema.TABLE_NAME, RelationshipSchema.COLUMN_USER_ID + "= ?", new String[] {
+                String.valueOf(userId)
+        }) > 0;
     }
 }
