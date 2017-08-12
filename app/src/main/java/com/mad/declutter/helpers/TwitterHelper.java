@@ -77,8 +77,8 @@ public class TwitterHelper {
     // Constants
     private static final String LOG_KEY = "TwitterHelper";
     private static final String TWITTER_CALLBACK_URL = "oauth://oob";
-    private static final String TWITTER_CONSUMER_KEY = "jXYoqycRtKniFhstPOKcnFfRA";
-    private static final String TWITTER_CONSUMER_SECRET = "2nuiZbHL3HPwT46qKjMsCart3moo7XLJa400XiSk5JZabnJsUl";
+    private static final String TWITTER_CONSUMER_KEY = "TWITTER_CONSUMER_KEY";
+    private static final String TWITTER_CONSUMER_SECRET = "TWITTER_CONSUMER_SECRET";
     private static final String TWITTER_OAUTH_VERIFIER_URL = "oauth_verifier";
 
     /**
