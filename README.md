@@ -1,5 +1,5 @@
-# declutter-twitter
-A decluttered tweets timeline for Android. Developed individually as part of the final project in the Mobile Application Development (MAD) subject at UTS.
+# Declutter for Twitter
+A decluttered tweets timeline for Android. Developed individually for the final project in the Mobile Application Development (MAD) subject at UTS.
 
 ## Requirements
 - Android Studio
