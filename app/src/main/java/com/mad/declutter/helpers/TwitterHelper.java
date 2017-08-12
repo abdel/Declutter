@@ -45,6 +45,7 @@ import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 import com.mad.declutter.R;
+import com.mad.declutter.activity.FriendsActivity;
 import com.mad.declutter.activity.MainActivity;
 import com.mad.declutter.activity.TimelineActivity;
 import com.mad.declutter.model.Session;
@@ -279,21 +280,28 @@ public class TwitterHelper {
          */
         @Override
         protected void onPostExecute(AccessToken accessToken) {
-            if (accessToken == null) return;
-
-            // Create a new user session
-            Session newSession = new Session(mContext,
-                    accessToken.getUserId(),
-                    accessToken.getScreenName(),
-                    accessToken.getToken(),
-                    accessToken.getTokenSecret(),
-                    true
-            );
-
-            // Hide progress bar
+            // Hide progress bar in any case
             mProgressBar.setVisibility(View.GONE);
 
-            mActivity.startActivity(new Intent(mActivity, TimelineActivity.class));
+            if (accessToken == null) {
+                // Re-display login on failure
+                mLoginButton.setVisibility(View.VISIBLE);
+            } else {
+                // Create a new user session
+                Session newSession = new Session(mContext,
+                        accessToken.getUserId(),
+                        accessToken.getScreenName(),
+                        accessToken.getToken(),
+                        accessToken.getTokenSecret(),
+                        true
+                );
+
+                // Hide progress bar
+                mProgressBar.setVisibility(View.GONE);
+
+                // Redirect user to Timeline Activity
+                mActivity.startActivity(new Intent(mActivity, TimelineActivity.class));
+            }
         }
     }
 
@@ -303,7 +311,7 @@ public class TwitterHelper {
      *
      * @author Abdelrahman Ahmed
      */
-    public class FetchTwitterFriends extends AsyncTask<Void, Void, Void> {
+    public class FetchTwitterFriends extends AsyncTask<Void, Void, Integer> {
         private long mUserId;
         private TextView mEmptyView;
         private RecyclerView mFriendsView;
@@ -349,7 +357,7 @@ public class TwitterHelper {
          * @return null
          */
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Integer doInBackground(Void... params) {
             long[][] friendsIdsChunks;
 
             try {
@@ -383,25 +391,43 @@ public class TwitterHelper {
                 }
             } catch (TwitterException e) {
                 e.printStackTrace();
+                return e.getErrorCode();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return 1;
             }
 
-            return null;
+            return 0;
         }
 
         /**
          * Swap the cursor to update the view with new data, hide the progress and re-display
          * the friends list
          *
-         * @param param Void parameter
+         * @param errorCode The Twitter error code
          */
         @Override
-        protected void onPostExecute(Void param) {
+        protected void onPostExecute(Integer errorCode) {
+            // Hide progress bar in any case
+            mFriendsProgress.setVisibility(View.GONE);
+
             // Fetch the new friends and swap the cursor to update the view
             Cursor newFriends = mDbHelper.getFriends(mDbRead, mUserId);
             mFriendAdapter.swapCursor(newFriends);
 
-            mFriendsProgress.setVisibility(View.GONE);
-            mFriendsView.setVisibility(View.VISIBLE);
+            // Display view depending on count
+            if (newFriends.getCount() == 0) {
+                mEmptyView.setVisibility(View.VISIBLE);
+            } else {
+                mFriendsView.setVisibility(View.VISIBLE);
+            }
+
+            // Display error messages
+            if (errorCode == 1) {
+                Toast.makeText(mContext, R.string.error_general, Toast.LENGTH_LONG).show();
+            } else if (errorCode == 88){
+                Toast.makeText(mContext, R.string.error_ratelimit, Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -412,7 +438,7 @@ public class TwitterHelper {
      *
      * @author Abdelrahman Ahmed
      */
-    public class FetchHomeTimeline extends AsyncTask<Void, Void, Void> {
+    public class FetchHomeTimeline extends AsyncTask<Void, Void, Integer> {
         private long mUserId;
         private TextView mEmptyView;
         private RecyclerView mTimelineView;
@@ -456,7 +482,7 @@ public class TwitterHelper {
          * @return null
          */
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Integer doInBackground(Void... params) {
             try {
                 int limit = 5;
                 long sinceId = -1;
@@ -486,19 +512,26 @@ public class TwitterHelper {
                 }
             } catch (TwitterException e) {
                 e.printStackTrace();
+                return e.getErrorCode();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return 1;
             }
 
-            return null;
+            return 0;
         }
 
         /**
          * Swap the cursor to update the view with new data, hide the progress and re-display
          * the timeline
          *
-         * @param param Void parameter
+         * @param errorCode The error code from the view
          */
         @Override
-        protected void onPostExecute(Void param) {
+        protected void onPostExecute(Integer errorCode) {
+            // Hide progress bar in any case
+            mTimelineProgress.setVisibility(View.GONE);
+
             // Fetch the new tweets, and swap the cursor
             Cursor newStatuses = mDbHelper.getFavouriteStatuses(mDbRead, mUserId);
 
@@ -507,9 +540,22 @@ public class TwitterHelper {
                 newStatuses = mDbHelper.getStatuses(mDbRead, mUserId);
             }
 
+            // Swap cursor and show view
             mTimelineAdapter.swapCursor(newStatuses);
-            mTimelineProgress.setVisibility(View.GONE);
-            mTimelineView.setVisibility(View.VISIBLE);
+
+            // Display view depending on count
+            if (newStatuses.getCount() == 0) {
+                mEmptyView.setVisibility(View.VISIBLE);
+            } else {
+                mTimelineView.setVisibility(View.VISIBLE);
+            }
+
+            // Display error messages
+            if (errorCode == 1) {
+                Toast.makeText(mContext, R.string.error_general, Toast.LENGTH_LONG).show();
+            } else if (errorCode == 88){
+                Toast.makeText(mContext, R.string.error_ratelimit, Toast.LENGTH_LONG).show();
+            }
         }
     }
 }
