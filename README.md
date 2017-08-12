@@ -13,4 +13,8 @@ A decluttered tweets timeline for Android. Developed individually as part of the
 1. Setup the project and gradle in Android Studio
 2. Add the JAR files for twitter4j and URLImageViewHelper in the `app/libs` directory
 3. Update the Twitter helper in `app/src/main/java/com/mad/declutter/helpers/TwitterHelper.java` with your own consumer key and secret
-4. Run the project!
+4. Build and run the project using your phone or emulator
+
+## Credits
+- Used `CursorRecyclerAdapater` class by [Arnaud Frugier](https://quanturium.github.io/2015/
+04/19/using-cursors-with-the-new-recyclerview/)
