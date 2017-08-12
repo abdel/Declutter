@@ -3,6 +3,7 @@ A decluttered tweets timeline for Android. Developed individually as part of the
 
 ## Requirements
 - Android Studio
+- Twitter Application
 - [Twitter4j](http://twitter4j.org/en/) 4.0.4 or higher
 - [URLImageViewHelper](https://github.com/koush/UrlImageViewHelper) 1.0.4 or higher
 - Android SDK 15+ and targetted for SDK 25
