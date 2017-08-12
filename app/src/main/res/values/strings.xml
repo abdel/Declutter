@@ -13,8 +13,8 @@
     <string name="welcome_user">Welcome to Declutter!\nPress the button below to authenticate\nwith Twitter and start decluttering your timeline.</string>
     <string name="profile_picture">Twitter Profile Picture</string>
 
-    <string name="no_tweets">Looks like we didn\'t fetch your tweets yet!\nClick the refresh icon in the menu to fetch your timeline.</string>
-    <string name="no_friends">Looks like we didn\'t fetch your friends yet!\nClick the refresh icon in the menu to fetch your friends.</string>
+    <string name="no_tweets">Looks like we didn\'t fetch your tweets yet!\n\nIf you already fetched your friends, click the refresh icon in the menu to fetch your timeline.\n\nOtherwise, navigate to the Friends Activity first.</string>
+    <string name="no_friends">Start by fetching your friends from Twitter by clicking the refresh icon in the menu.</string>
     <string name="no_favourites">Looks like you have no favourites yet!\nGo back to the Friends Activity to select your favourites.</string>
 
     <string name="authenticated">You\'re already authenticated with Twitter!</string>
@@ -25,4 +25,7 @@
 
     <string name="dialog_network_title">Internet Connection Error</string>
     <string name="dialog_network_message">Please connect to a working Internet connection</string>
+
+    <string name="error_ratelimit">Your Twitter rate limit has been exhausted. Please try again later.</string>
+    <string name="error_general">Something went wrong while communicating with Twitter. Please try again later.</string>
 </resources>
