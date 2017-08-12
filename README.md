@@ -16,5 +16,4 @@ A decluttered tweets timeline for Android. Developed individually as part of the
 4. Build and run the project using your phone or emulator
 
 ## Credits
-- Used `CursorRecyclerAdapater` class by [Arnaud Frugier](https://quanturium.github.io/2015/
-04/19/using-cursors-with-the-new-recyclerview/)
+- Used `CursorRecyclerAdapater` class by [Arnaud Frugier](https://quanturium.github.io/2015/04/19/using-cursors-with-the-new-recyclerview/)
