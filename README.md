@@ -1,10 +1,10 @@
 # declutter-twitter
-A decluttered tweets timeline for Android
+A decluttered tweets timeline for Android. Developed individually as part of the final project in the Mobile Application Development (MAD) subject at UTS.
 
 ## Requirements
 - Android Studio
-- Twitter4j 4.0.4 or higher
-- URLImageViewHelper 1.0.4 or higher
+- [Twitter4j](http://twitter4j.org/en/) 4.0.4 or higher
+- [URLImageViewHelper](https://github.com/koush/UrlImageViewHelper) 1.0.4 or higher
 - Android SDK 15+ and targetted for SDK 25
 
 ## Installation
